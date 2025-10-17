@@ -4515,17 +4515,24 @@ function config_Html(token = "test", proxyhost = "") {
         }
 
         .footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: 32px;
-            color: var(--text-light);
-            font-size: 0.85rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px 20px 0 0;
-        }
+    text-align: center;
+    padding: 20px;
+    margin-top: 32px;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px 20px 0 0;
+}
+
+.footer p {
+    margin: 0;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
 
         .btn {
             padding: 12px 20px;
