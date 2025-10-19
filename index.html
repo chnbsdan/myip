@@ -1,71 +1,189 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="icon" sizes="120x120"
-			href="https://pan.hangdn.com/raw/ico/map64.ico">
-		<title>GitHub for chnbsdan</title>
-		<style>
-			body {
-				font-family: Arial, sans-serif;
-				line-height: 1.6;
-				margin: 20px;
-				background-color: #f5f5f5;
-				color: #333;
-				padding: 20px;
-			}
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub for chnbsdan</title>
+    <link rel="icon" sizes="120x120" href="https://pan.hangdn.com/raw/ico/map64.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-			a {
-				color: #9db4ff;
-				text-decoration: none;
-			}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-			h1,
-			h2 {
-				text-align: center;
-				margin-bottom: 20px;
-			}
+        /* 背景图片轮播 */
+        .background-slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
 
-			ol {
-				list-style-type: decimal;
-				padding-left: 20px;
-			}
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
 
-			ol li {
-				margin-bottom: 15px;
-			}
+        .slide.active {
+            opacity: 1;
+        }
 
-			p {
-				margin-bottom: 15px;
-			}
+        /* 毛玻璃效果容器 */
+        .glass-container {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+        }
 
-			@media (prefers-color-scheme: dark) {
-				body {
-					background-color: #333;
-					color: #f0f0f0;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<h1>GitHub for chnbsdan</h1>
-		<p>感谢您访问和使用我的GitHub仓库。在使用本仓库之前，请仔细阅读以下免责声明。通过访问和使用本仓库，即表示您同意遵守以下条款和条件：</p>
-		<ol>
-			<li>服务对象：本仓库中的所有内容仅供非中国大陆地区用户学习和交流之用。</li>
-			<li>内容目的：本仓库内容旨在为用户提供学习和交流之用，并不包含专业建议或法律意见。使用前请自行评估并承担风险。</li>
-			<li>免责声明范围：本仓库不保证内容准确性、完整性或适用性，并不对因使用内容导致的任何直接或间接损失负责。</li>
-			<li>隐私保护：我们尊重用户隐私信息，任何通过本仓库收集的个人信息仅用于提供服务，不会被出售或分享给第三方。</li>
-			<li>服务变更：本仓库保留修改、更新或暂停服务的权利，将尽量提供合理通知，并确保对用户的服务影响降至最低。</li>
-			<li>法律管辖：本免责声明受所适用法律约束，用户同意通过法律管辖权解决与本仓库相关的争议或索赔。</li>
-			<li>用户责任：用户应遵守所在国家或地区的法律法规，不得利用本仓库内容从事违法行为，需自行承担违反免责声明所引发的后果。</li>
-			<li>知识产权：本仓库的原创内容受到知识产权法保护，任何未经授权的复制或使用均属违法。</li>
-			<li>免责声明更新：免责声明可能随时更新，建议定期查阅以了解最新条款。继续使用即表示接受更新内容。</li>
-			<li>不保证连续性：本仓库不保证服务的连续性、及时性或安全性，可能受到多种因素影响。</li>
-		</ol>
-		<p>请注意，免责声明并不排除或限制可能适用的法定权利。</p>
-		<h2>
-			<a target="_blank" href="https://github.com/chnbsdan">点击进入即表示您已阅读并同意上述免责声明</a>
-		</h2>
-	</body>
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            margin-top: 30px;
+            font-size: 1.5rem;
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        ol {
+            text-align: left;
+            margin: 25px 0;
+            padding-left: 30px;
+        }
+
+        ol li {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        a {
+            color: #a8d1ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            position: relative;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        a:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .glass-container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            ol {
+                padding-left: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景图片轮播 -->
+    <div class="background-slideshow">
+        <div class="slide active" style="background-image: url('https://webp.hangdn.com/fg/sh2.jpg')"></div>
+        <div class="slide" style="background-image: url('https://webp.hangdn.com/fg/sh1.jpg')"></div>
+        <div class="slide" style="background-image: url('https://webp.hangdn.com/fg/sh3.jpg')"></div>
+        <div class="slide" style="background-image: url('https://webp.hangdn.com/fg/bj1.jpg')"></div>
+    </div>
+
+    <!-- 毛玻璃内容容器 -->
+    <div class="glass-container">
+        <h1>GitHub for chnbsdan</h1>
+        <p>感谢您访问和使用我的GitHub仓库。在使用本仓库之前，请仔细阅读以下免责声明。通过访问和使用本仓库，即表示您同意遵守以下条款和条件：</p>
+        <ol>
+            <li>服务对象：本仓库中的所有内容仅供非中国大陆地区用户学习和交流之用。</li>
+            <li>内容目的：本仓库内容旨在为用户提供学习和交流之用，并不包含专业建议或法律意见。使用前请自行评估并承担风险。</li>
+            <li>免责声明范围：本仓库不保证内容准确性、完整性或适用性，并不对因使用内容导致的任何直接或间接损失负责。</li>
+            <li>隐私保护：我们尊重用户隐私信息，任何通过本仓库收集的个人信息仅用于提供服务，不会被出售或分享给第三方。</li>
+            <li>服务变更：本仓库保留修改、更新或暂停服务的权利，将尽量提供合理通知，并确保对用户的服务影响降至最低。</li>
+            <li>法律管辖：本免责声明受所适用法律约束，用户同意通过法律管辖权解决与本仓库相关的争议或索赔。</li>
+            <li>用户责任：用户应遵守所在国家或地区的法律法规，不得利用本仓库内容从事违法行为，需自行承担违反免责声明所引发的后果。</li>
+            <li>知识产权：本仓库的原创内容受到知识产权法保护，任何未经授权的复制或使用均属违法。</li>
+            <li>免责声明更新：免责声明可能随时更新，建议定期查阅以了解最新条款。继续使用即表示接受更新内容。</li>
+            <li>不保证连续性：本仓库不保证服务的连续性、及时性或安全性，可能受到多种因素影响。</li>
+        </ol>
+        <p>请注意，免责声明并不排除或限制可能适用的法定权利。</p>
+        <h2>
+            <a target="_blank" href="https://github.com/chnbsdan">点击进入即表示您已阅读并同意上述免责声明</a>
+        </h2>
+    </div>
+
+    <script>
+        // 背景图片轮播功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            let currentSlide = 0;
+            
+            function nextSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }
+            
+            // 每5秒切换一次背景图片
+            setInterval(nextSlide, 5000);
+        });
+    </script>
+</body>
 </html>
