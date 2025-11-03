@@ -249,6 +249,7 @@ addEventListener('fetch', event => {
 	  <meta charset="UTF-8">
 	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	  <title>智能导航页</title>
+	  <link rel="icon" href="https://cdn.jsdelivr.net/gh/chnbsdan/cloudflare-workers-blog@master/themes/mya/files/hangdn.ico" type="image/x-icon">
 	  <script src="https://code.iconify.design/2/2.0.3/iconify.min.js"></script>
 	  <style>
 		  :root {
@@ -286,60 +287,68 @@ addEventListener('fetch', event => {
 			  background-attachment: fixed;
 		  }
   
+		  /* 移除容器限制，让内容直接显示在背景上 */
 		  .container {
-			  max-width: 1200px;
-			  margin: 0 auto;
 			  padding: 20px;
+			  min-height: 100vh;
 		  }
   
-		  /* 头部样式 - 毛玻璃效果 */
+		  /* 头部样式 - 直接放在背景上，无背景色 */
 		  .header {
-			  background: var(--glass-background);
-			  backdrop-filter: blur(16px) saturate(180%);
-			  -webkit-backdrop-filter: blur(16px) saturate(180%);
-			  border: 1px solid var(--glass-border);
-			  color: var(--text-primary);
-			  padding: 1.5rem 0;
+			  color: white;
+			  padding: 2rem 0;
 			  margin-bottom: 2rem;
-			  border-radius: 20px;
 			  text-align: center;
 			  position: relative;
-			  overflow: hidden;
-			  width: 90%;
-			  margin-left: auto;
-			  margin-right: auto;
-		  }
-  
-		  .header::before {
-			  content: '';
-			  position: absolute;
-			  top: 0;
-			  left: 0;
-			  right: 0;
-			  bottom: 0;
-			  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-			  z-index: -1;
+			  width: 100%;
 		  }
   
 		  .header-content {
 			  position: relative;
 			  z-index: 2;
+			  display: flex;
+			  flex-direction: column;
+			  align-items: center;
+			  gap: 1rem;
+		  }
+  
+		  .header-logo {
+			  display: flex;
+			  align-items: center;
+			  gap: 1rem;
+			  margin-bottom: 0.5rem;
+		  }
+  
+		  .logo-icon {
+			  width: 60px;
+			  height: 60px;
+			  border-radius: 12px;
+			  object-fit: cover;
+			  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+			  transition: all 0.3s ease;
+		  }
+  
+		  .logo-icon:hover {
+			  transform: scale(1.05);
+			  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
 		  }
   
 		  .header h1 {
-			  font-size: 2.5rem;
-			  font-weight: 700;
-			  margin-bottom: 0.5rem;
-			  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-			  -webkit-background-clip: text;
-			  -webkit-text-fill-color: transparent;
-			  background-clip: text;
+			  font-size: 3rem;
+			  font-weight: 800;
+			  margin: 0;
+			  color: white;
+			  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+			  letter-spacing: 1px;
 		  }
   
 		  .header p {
-			  font-size: 1.1rem;
-			  opacity: 0.8;
+			  font-size: 1.3rem;
+			  opacity: 0.95;
 			  font-weight: 500;
+			  color: white;
+			  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+			  margin: 0;
 		  }
   
 		  /* 右下角管理员按钮 - 齿轮样式 */
@@ -351,8 +360,8 @@ addEventListener('fetch', event => {
 		  }
   
 		  .gear-btn {
-			  width: 60px;
-			  height: 60px;
+			  width: 30px;
+			  height: 30px;
 			  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
 			  border: none;
 			  border-radius: 50%;
@@ -372,8 +381,8 @@ addEventListener('fetch', event => {
 		  }
   
 		  .logout-btn {
-			  width: 50px;
-			  height: 50px;
+			  width: 20px;
+			  height: 20px;
 			  background: linear-gradient(135deg, var(--danger-color), #f97316);
 			  border: none;
 			  border-radius: 50%;
@@ -392,12 +401,12 @@ addEventListener('fetch', event => {
 			  box-shadow: 0 12px 35px rgba(239, 68, 68, 0.4);
 		  }
   
-		  /* 控制面板 - 毛玻璃 */
+		  /* 控制面板 - 透明背景 */
 		  .control-panel {
-			  background: var(--glass-background);
+			  background: rgba(255, 255, 255, 0.1);
 			  backdrop-filter: blur(16px) saturate(180%);
 			  -webkit-backdrop-filter: blur(16px) saturate(180%);
-			  border: 1px solid var(--glass-border);
+			  border: 1px solid rgba(255, 255, 255, 0.2);
 			  padding: 1.2rem;
 			  border-radius: 16px;
 			  box-shadow: var(--shadow);
@@ -407,7 +416,8 @@ addEventListener('fetch', event => {
 			  align-items: center;
 			  flex-wrap: wrap;
 			  gap: 1rem;
-			  width: 90%;
+			  width: 100%;
+			  max-width: 1200px;
 			  margin-left: auto;
 			  margin-right: auto;
 		  }
@@ -456,18 +466,19 @@ addEventListener('fetch', event => {
 			  color: white;
 		  }
   
-		  /* 分类样式 - 毛玻璃 */
+		  /* 分类样式 - 半透明毛玻璃 */
 		  .category {
-			  background: var(--glass-background);
+			  background: rgba(255, 255, 255, 0.15);
 			  backdrop-filter: blur(16px) saturate(180%);
 			  -webkit-backdrop-filter: blur(16px) saturate(180%);
-			  border: 1px solid var(--glass-border);
+			  border: 1px solid rgba(255, 255, 255, 0.2);
 			  border-radius: 20px;
 			  padding: 1.5rem;
 			  margin-bottom: 1.5rem;
 			  box-shadow: var(--shadow);
 			  transition: all 0.3s ease;
-			  width: 95%;
+			  width: 100%;
+			  max-width: 1200px;
 			  margin-left: auto;
 			  margin-right: auto;
 		  }
@@ -475,7 +486,8 @@ addEventListener('fetch', event => {
 		  .category:hover {
 			  transform: translateY(-5px);
 			  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-			  border-color: rgba(255, 255, 255, 0.5);
+			  border-color: rgba(255, 255, 255, 0.4);
+			  background: rgba(255, 255, 255, 0.2);
 		  }
   
 		  .category-header {
@@ -484,16 +496,17 @@ addEventListener('fetch', event => {
 			  align-items: center;
 			  margin-bottom: 1.2rem;
 			  padding-bottom: 0.8rem;
-			  border-bottom: 1px solid var(--border-color);
+			  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 		  }
   
 		  .category-title {
 			  font-size: 1.5rem;
 			  font-weight: 700;
-			  color: var(--text-primary);
+			  color: white;
 			  display: flex;
 			  align-items: center;
 			  gap: 0.5rem;
+			  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 		  }
   
 		  .category-actions {
@@ -503,12 +516,12 @@ addEventListener('fetch', event => {
   
 		  .icon-btn {
 			  background: rgba(255, 255, 255, 0.2);
-			  border: 1px solid var(--glass-border);
+			  border: 1px solid rgba(255, 255, 255, 0.3);
 			  padding: 0.5rem;
 			  border-radius: 10px;
 			  cursor: pointer;
 			  transition: all 0.3s ease;
-			  color: var(--text-primary);
+			  color: white;
 			  backdrop-filter: blur(10px);
 			  -webkit-backdrop-filter: blur(10px);
 		  }
@@ -526,10 +539,10 @@ addEventListener('fetch', event => {
 		  }
   
 		  .site-card {
-			  background: var(--card-background);
+			  background: rgba(255, 255, 255, 0.2);
 			  backdrop-filter: blur(16px) saturate(180%);
 			  -webkit-backdrop-filter: blur(16px) saturate(180%);
-			  border: 1px solid var(--glass-border);
+			  border: 1px solid rgba(255, 255, 255, 0.3);
 			  border-radius: 16px;
 			  padding: 1.2rem 0.8rem;
 			  text-align: center;
@@ -542,7 +555,7 @@ addEventListener('fetch', event => {
 			  transform: translateY(-8px);
 			  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 			  border-color: var(--primary-color);
-			  background: rgba(255, 255, 255, 0.95);
+			  background: rgba(255, 255, 255, 0.3);
 		  }
   
 		  .site-icon {
@@ -552,22 +565,24 @@ addEventListener('fetch', event => {
 			  display: flex;
 			  align-items: center;
 			  justify-content: center;
-			  color: var(--primary-color);
+			  color: white;
 			  font-size: 2rem;
+			  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
 		  }
   
 		  .site-name {
 			  font-weight: 600;
-			  color: var(--text-primary);
+			  color: white;
 			  margin-bottom: 0.3rem;
 			  font-size: 0.9rem;
+			  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 		  }
   
 		  .site-url {
 			  font-size: 0.75rem;
-			  color: var(--text-secondary);
+			  color: rgba(255, 255, 255, 0.8);
 			  word-break: break-all;
-			  opacity: 0.8;
+			  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
 		  }
   
 		  .site-actions {
@@ -703,12 +718,20 @@ addEventListener('fetch', event => {
 			  }
 			  
 			  .header {
-				  width: 95%;
-				  padding: 1rem 0;
+				  padding: 1.5rem 0;
 			  }
 			  
 			  .header h1 {
-				  font-size: 2rem;
+				  font-size: 2.2rem;
+			  }
+			  
+			  .header p {
+				  font-size: 1.1rem;
+			  }
+			  
+			  .logo-icon {
+				  width: 50px;
+				  height: 50px;
 			  }
 			  
 			  .sites-grid {
@@ -717,7 +740,6 @@ addEventListener('fetch', event => {
 			  }
 			  
 			  .category {
-				  width: 98%;
 				  padding: 1rem;
 			  }
 			  
@@ -740,6 +762,23 @@ addEventListener('fetch', event => {
 		  }
   
 		  @media (max-width: 480px) {
+			  .header h1 {
+				  font-size: 1.8rem;
+			  }
+			  
+			  .header p {
+				  font-size: 1rem;
+			  }
+			  
+			  .logo-icon {
+				  width: 40px;
+				  height: 40px;
+			  }
+			  
+			  .header-logo {
+				  gap: 0.7rem;
+			  }
+			  
 			  .sites-grid {
 				  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
 			  }
@@ -772,22 +811,28 @@ addEventListener('fetch', event => {
 		  .empty-state {
 			  text-align: center;
 			  padding: 3rem 2rem;
-			  color: var(--text-secondary);
+			  color: rgba(255, 255, 255, 0.8);
 		  }
   
 		  .empty-state .iconify {
 			  font-size: 4rem;
 			  margin-bottom: 1rem;
 			  opacity: 0.5;
+			  color: white;
 		  }
 	  </style>
   </head>
   <body>
 	  <div class="container">
-		  <!-- 头部 -->
+		  <!-- 头部 - 直接放在背景上 -->
 		  <header class="header">
 			  <div class="header-content">
-				  <h1>🚀 智能导航</h1>
+				  <div class="header-logo">
+					  <img src="https://cdn.jsdelivr.net/gh/chnbsdan/cloudflare-workers-blog@master/themes/mya/files/hangdn.ico" 
+						   alt="导航图标" 
+						   class="logo-icon">
+					  <h1>智能导航</h1>
+				  </div>
 				  <p>高效组织你的网络世界</p>
 			  </div>
 		  </header>
