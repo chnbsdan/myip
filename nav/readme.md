@@ -1,2 +1,11 @@
+KV storage
+KV environment variable: NAVIGATION_DATA
+KV naming: NAV
+Binding: NAVIGATION_DATA=NAV
 
-环境变量   NAVIGATION_DATA  ，KV  命名，绑定 ，worker部署
+
+类型            名称                  值
+KV 命名空间     NAVIGATION_DATA      NAV    
+
+
+
