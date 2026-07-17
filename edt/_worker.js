@@ -1,4 +1,4 @@
-const Version = '2026-07-11 19:02:35';
+const Version = '2026-07-16 19:02:35';
 let config_JSON, 缓存SOCKS5白名单 = null, 调试日志打印 = false;
 let SOCKS5白名单 = ['*tapecontent.net', '*cloudatacdn.com', '*loadshare.org', '*cdn-centaurus.com', 'scholar.google.com'];
 const Pages静态页面 = 'https://edt-pages.github.io';
@@ -116,7 +116,16 @@ export default {
 							return 响应;
 						}
 					}
-					return fetch(Pages静态页面 + '/login');
+					const loginResponse = await fetch(Pages静态页面 + '/login');
+let loginHTML = await loginResponse.text();
+loginHTML = loginHTML.replace(
+    '</head>',
+    '<link rel="icon" href="https://aoso.hangdn.com/favicon/logo.png" type="image/png"><link rel="shortcut icon" href="https://aoso.hangdn.com/favicon/logo.png"></head>'
+);
+return new Response(loginHTML, {
+    status: loginResponse.status,
+    headers: { 'Content-Type': 'text/html; charset=UTF-8' }
+});
 				} else if (访问路径 === 'admin' || 访问路径.startsWith('admin/')) {//验证cookie后响应管理页面
 					const cookies = request.headers.get('Cookie') || '';
 					const authCookie = cookies.split(';').find(c => c.trim().startsWith('auth='))?.split('=')[1];
@@ -303,7 +312,16 @@ export default {
 					}
 
 					ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Admin_Login', config_JSON));
-					return fetch(Pages静态页面 + '/admin' + url.search);
+					const adminResponse = await fetch(Pages静态页面 + '/admin' + url.search);
+let adminHTML = await adminResponse.text();
+adminHTML = adminHTML.replace(
+    '</head>',
+    '<link rel="icon" href="https://aoso.hangdn.com/favicon/logo.png" type="image/png"><link rel="shortcut icon" href="https://aoso.hangdn.com/favicon/logo.png"></head>'
+);
+return new Response(adminHTML, {
+    status: adminResponse.status,
+    headers: { 'Content-Type': 'text/html; charset=UTF-8' }
+});
 				} else if (访问路径 === 'logout' || uuidRegex.test(访问路径)) {
 					const 响应 = new Response('重定向中...', { status: 302, headers: { 'Location': '/login' } });
 					响应.headers.set('Set-Cookie', 'auth=; Path=/; Max-Age=0; HttpOnly');
@@ -552,6 +570,8 @@ function 生成音乐播放器页面(host) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>音乐播放器 - ${host}</title>
+	<link rel="icon" href="https://aoso.hangdn.com/favicon/logo.png" type="image/png">
+    <link rel="shortcut icon" href="https://aoso.hangdn.com/favicon/logo.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -559,10 +579,12 @@ function 生成音乐播放器页面(host) {
         body { margin:0; padding:0; font-family:'Microsoft YaHei',sans-serif; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); min-height:100vh; color:white; }
         .header { text-align:center; margin-bottom:20px; padding:20px; }
         .header h1 { font-size:2.5rem; margin:0; text-shadow:2px 2px 4px rgba(0,0,0,0.3); }
+        .header h1 i { margin-right:10px; }
         .header p { font-size:1.2rem; opacity:0.9; margin-top:10px; }
         .container { width:100%; max-width:800px; padding:20px; margin:0 auto; }
         .back-link { display:inline-block; margin-top:30px; padding:10px 20px; background:rgba(255,255,255,0.2); border-radius:25px; color:white; text-decoration:none; transition:all 0.3s ease; }
         .back-link:hover { background:rgba(255,255,255,0.3); transform:translateY(-2px); }
+        .back-link i { margin-right:8px; }
         #player-wrap { position:fixed; left:18px; bottom:92px; width:360px; max-width:calc(100% - 36px); z-index:15000; display:none; transform-origin:left bottom; }
         #player-wrap.show { display:block; animation:popIn .18s ease; }
         @keyframes popIn { from{opacity:0; transform:scale(.96)} to{opacity:1; transform:scale(1)} }
@@ -572,25 +594,24 @@ function 生成音乐播放器页面(host) {
         .aplayer .aplayer-lrc p { color:#ff8c00 !important; }
         .aplayer .aplayer-lrc p.aplayer-lrc-current { color:#ff4500 !important; font-weight:bold; font-size:16px; }
         
-        /* === 独立歌词窗口 - 可拖拽、可缩放 === */
+        /* === 独立歌词窗口 - 毛玻璃半透明 === */
         #floating-lyrics {
             position:fixed;
             left:100px;
             bottom:50px;
             z-index:99999;
-            background:rgba(0,0,0,0.75);
-            backdrop-filter:blur(20px) saturate(180%);
+            background:rgba(255,255,255,0.12);
+            backdrop-filter:blur(30px) saturate(180%);
+            -webkit-backdrop-filter:blur(30px) saturate(180%);
             padding:20px 30px;
             border-radius:16px;
-            border:1px solid rgba(255,255,255,0.15);
-            box-shadow:0 20px 60px rgba(0,0,0,0.5);
+            border:1px solid rgba(255,255,255,0.2);
+            box-shadow:0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
             min-width:200px;
             min-height:80px;
-            max-width:600px;
-            cursor:grab;
+            max-width:1200px; /* 原来是600px，改大 */
             user-select:none;
             touch-action:none;
-            transition:box-shadow 0.3s ease;
             display:none;
             opacity:0;
             transition:opacity 0.3s ease, box-shadow 0.3s ease;
@@ -600,11 +621,10 @@ function 生成音乐播放器页面(host) {
             opacity:1;
         }
         #floating-lyrics.dragging {
-            cursor:grabbing;
-            box-shadow:0 30px 80px rgba(0,0,0,0.7);
+            box-shadow:0 30px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
             transition:none;
         }
-        /* 窗口控制栏 */
+        /* 控制栏 */
         #lyrics-control-bar {
             display:flex;
             justify-content:space-between;
@@ -614,37 +634,39 @@ function 生成音乐播放器页面(host) {
             border-bottom:1px solid rgba(255,255,255,0.1);
             cursor:grab;
         }
-        #lyrics-control-bar.dragging {
-            cursor:grabbing;
-        }
+        #lyrics-control-bar.dragging { cursor:grabbing; }
         .lyrics-control-left {
             display:flex;
             align-items:center;
             gap:10px;
         }
         .lyrics-control-left .drag-handle {
-            color:rgba(255,255,255,0.4);
+            color:rgba(255,255,255,0.5);
             font-size:14px;
             cursor:grab;
         }
-        .lyrics-control-left .drag-handle:hover {
-            color:rgba(255,255,255,0.7);
+        .lyrics-control-left .drag-handle:hover { color:rgba(255,255,255,0.8); }
+        .lyrics-control-left .title-text {
+            font-size:12px;
+            opacity:0.6;
+            color:#fff;
         }
+        .lyrics-control-left .title-text i { margin-right:4px; }
         .lyrics-control-right {
             display:flex;
             align-items:center;
-            gap:8px;
+            gap:4px;
             flex-wrap:wrap;
         }
         .lyrics-control-btn {
-            background:none;
-            border:none;
-            color:rgba(255,255,255,0.5);
+            background:rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.08);
+            color:rgba(255,255,255,0.6);
             cursor:pointer;
             padding:4px 6px;
             border-radius:6px;
             transition:all 0.2s ease;
-            font-size:14px;
+            font-size:13px;
             display:flex;
             align-items:center;
             justify-content:center;
@@ -652,12 +674,38 @@ function 生成音乐播放器页面(host) {
             height:28px;
         }
         .lyrics-control-btn:hover {
-            background:rgba(255,255,255,0.15);
-            color:rgba(255,255,255,0.9);
+            background:rgba(255,255,255,0.2);
+            color:rgba(255,255,255,0.95);
+            border-color:rgba(255,255,255,0.2);
         }
-        .lyrics-control-btn.active {
-            color:#ff8c00;
+        .lyrics-control-btn.active { color:#ff8c00; }
+        
+        /* 颜色选择器 */
+        .color-picker-wrapper {
+            display:flex;
+            align-items:center;
+            gap:4px;
+            padding:0 4px;
+            background:rgba(255,255,255,0.08);
+            border-radius:6px;
+            border:1px solid rgba(255,255,255,0.08);
         }
+        .color-picker-wrapper input[type="color"] {
+            width:20px;
+            height:20px;
+            border:none;
+            border-radius:50%;
+            padding:0;
+            cursor:pointer;
+            background:transparent;
+        }
+        .color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper { padding:0; }
+        .color-picker-wrapper input[type="color"]::-webkit-color-swatch {
+            border:2px solid rgba(255,255,255,0.2);
+            border-radius:50%;
+        }
+        
+        /* 歌词内容 */
         #lyrics-content {
             text-align:center;
             min-height:40px;
@@ -673,103 +721,120 @@ function 生成音乐播放器页面(host) {
             min-height:30px;
             line-height:1.4;
             transition:color 0.3s ease;
-            text-shadow:0 0 20px rgba(255,140,0,0.15);
+            text-shadow:0 0 30px rgba(255,140,0,0.1);
+            color:#fff;
         }
         #lyrics-content .next-line {
-            opacity:0.5;
+            opacity:0.4;
             min-height:20px;
             line-height:1.3;
             font-size:0.7em;
             transition:color 0.3s ease;
+            color:#fff;
         }
         #lyrics-content .current-line .typing-text {
-            display:inline-block;
-            overflow:hidden;
-            white-space:nowrap;
-            animation:typing 2s steps(40,end), blink-caret 0.75s step-end infinite;
-            border-right:2px solid #ff4500;
-            animation-fill-mode:both;
-        }
+    display:inline-block;
+    overflow:hidden;
+    white-space:nowrap;
+    animation:typing 2s steps(40,end);
+    border-right:2px solid transparent;
+    animation-fill-mode:both;
+}
         @keyframes typing { from{width:0} to{width:100%} }
         @keyframes blink-caret { from,to{border-color:transparent} 50%{border-color:#ff4500} }
         
-        /* 缩放控制指示器 */
-        #zoom-indicator {
+        /* 尺寸指示器 */
+        #size-indicator {
             position:absolute;
-            bottom:-30px;
+            bottom:-32px;
             left:50%;
             transform:translateX(-50%);
-            background:rgba(0,0,0,0.6);
-            color:white;
-            padding:2px 10px;
+            background:rgba(0,0,0,0.5);
+            backdrop-filter:blur(10px);
+            color:#fff;
+            padding:2px 12px;
             border-radius:10px;
-            font-size:12px;
+            font-size:11px;
             opacity:0;
             transition:opacity 0.3s ease;
             pointer-events:none;
+            white-space:nowrap;
         }
-        #zoom-indicator.show {
-            opacity:1;
-        }
-
-        #music-capsule{ position:fixed; left:22px; bottom:96px; width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:30000; background:radial-gradient(circle at 30% 30%,#00c3ff,#0061ff); box-shadow:0 8px 28px rgba(0,180,255,0.12); transition:all 0.3s ease; }
-        #music-capsule:hover { transform:scale(1.1); box-shadow:0 12px 32px rgba(0,180,255,0.28); }
-        #music-capsule.playing{ background:radial-gradient(circle at 30% 30%,#ff9500,#ff5e00); box-shadow:0 8px 28px rgba(255,140,0,0.28) }
-        #music-capsule.playing img{ animation:spin 6s linear infinite }
-        @keyframes spin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
-        #right-menu{ position:fixed; display:none; z-index:40000; min-width:220px; background:rgba(255,255,255,0.12); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:#fff; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.35); padding:6px 0; opacity:0; transform:scale(.98); transition:opacity .12s,transform .12s }
-        #right-menu.show{ display:flex; opacity:1; transform:scale(1); flex-direction:column }
-        #right-menu li{ list-style:none; padding:10px 16px; cursor:pointer; white-space:nowrap; font-weight:700; transition:background .12s; display:flex; align-items:center; gap:10px; }
-        #right-menu li:hover{ background:rgba(255,255,255,0.14); color:#000; border-radius:6px }
-        #right-menu li i { width:20px; text-align:center; }
-        #right-menu::after{ content:""; position:absolute; top:-8px; left:var(--arrow-left,24px); transform:translateX(-50%); border-left:8px solid transparent; border-right:8px solid transparent; border-bottom:8px solid rgba(255,255,255,0.12) }
-        #capsule-cover { width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid white; }
+        #size-indicator.show { opacity:1; }
         
-        /* 颜色选择器样式 */
-        .color-picker-wrapper {
+        /* 缩放拖拽手柄 - 边缘 */
+        .resize-handle {
+            position:absolute;
+            z-index:10;
+        }
+        .resize-handle-bottom-right {
+            bottom:-4px;
+            right:-4px;
+            width:16px;
+            height:16px;
+            cursor:nwse-resize;
+            color:rgba(255,255,255,0.3);
             display:flex;
             align-items:center;
-            gap:4px;
-            padding:0 4px;
+            justify-content:center;
+            font-size:12px;
         }
-        .color-picker-wrapper input[type="color"] {
-            width:22px;
-            height:22px;
-            border:none;
-            border-radius:50%;
-            padding:0;
-            cursor:pointer;
-            background:transparent;
+        .resize-handle-bottom-right:hover { color:rgba(255,255,255,0.7); }
+        .resize-handle-bottom {
+            bottom:-4px;
+            left:50%;
+            transform:translateX(-50%);
+            width:40px;
+            height:8px;
+            cursor:ns-resize;
+            background:rgba(255,255,255,0.08);
+            border-radius:4px;
         }
-        .color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
-            padding:0;
+        .resize-handle-bottom:hover { background:rgba(255,255,255,0.2); }
+        .resize-handle-right {
+            top:50%;
+            right:-4px;
+            transform:translateY(-50%);
+            width:8px;
+            height:40px;
+            cursor:ew-resize;
+            background:rgba(255,255,255,0.08);
+            border-radius:4px;
         }
-        .color-picker-wrapper input[type="color"]::-webkit-color-swatch {
-            border:2px solid rgba(255,255,255,0.3);
-            border-radius:50%;
-        }
-        .color-label {
-            font-size:10px;
-            opacity:0.5;
-            margin-right:2px;
-        }
+        .resize-handle-right:hover { background:rgba(255,255,255,0.2); }
+
+        /* 胶囊按钮 */
+        #music-capsule{ position:fixed; left:22px; bottom:96px; width:100px; height:100px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:30000; background:radial-gradient(circle at 30% 30%,rgba(0,195,255,0.9),rgba(0,97,255,0.9)); box-shadow:0 8px 28px rgba(0,180,255,0.2); backdrop-filter:blur(10px); transition:all 0.3s ease; border:2px solid rgba(255,255,255,0.15); }
+        #music-capsule:hover { transform:scale(1.1); box-shadow:0 12px 32px rgba(0,180,255,0.35); }
+        #music-capsule.playing{ background:radial-gradient(circle at 30% 30%,rgba(255,149,0,0.9),rgba(255,94,0,0.9)); box-shadow:0 8px 28px rgba(255,140,0,0.35); }
+        #music-capsule.playing img{ animation:spin 6s linear infinite }
+        @keyframes spin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+        #capsule-cover { width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.3); }
+        
+        /* 右键菜单 */
+        #right-menu{ position:fixed; display:none; z-index:40000; min-width:200px; background:rgba(255,255,255,0.12); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:#fff; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); padding:6px 0; opacity:0; transform:scale(.96); transition:opacity .15s,transform .15s }
+        #right-menu.show{ display:flex; opacity:1; transform:scale(1); flex-direction:column }
+        #right-menu li{ list-style:none; padding:10px 16px; cursor:pointer; white-space:nowrap; font-weight:600; transition:background .15s; display:flex; align-items:center; gap:12px; font-size:14px; }
+        #right-menu li:hover{ background:rgba(255,255,255,0.15); border-radius:6px; color:#fff; }
+        #right-menu li i { width:18px; text-align:center; font-size:14px; }
+        /*#right-menu::after{ content:""; position:absolute; top:-7px; left:var(--arrow-left,24px); transform:translateX(-50%); border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:7px solid rgba(255,255,255,0.12) }*/
     </style>
 </head>
 <body>
     <div class="header">
-        <h1><i class="fas fa-music" style="margin-right:10px;"></i>音乐播放器</h1>
+        <h1><i class="fas fa-music"></i> 音乐播放器</h1>
         <p>${host} - 享受音乐时光</p>
     </div>
     <div class="container">
         <div id="aplayer-container"></div>
     </div>
     
-    <!-- 独立歌词窗口 - 可拖拽可缩放 -->
+    <!-- 独立歌词窗口 - 毛玻璃半透明 -->
     <div id="floating-lyrics">
         <div id="lyrics-control-bar">
             <div class="lyrics-control-left">
                 <span class="drag-handle"><i class="fas fa-grip-lines"></i></span>
-                <span style="font-size:12px;opacity:0.5;">歌词</span>
+                <span class="title-text"><i class="fas fa-align-left"></i> 歌词</span>
             </div>
             <div class="lyrics-control-right">
                 <button class="lyrics-control-btn" id="btn-color" title="歌词颜色"><i class="fas fa-palette"></i></button>
@@ -777,22 +842,25 @@ function 生成音乐播放器页面(host) {
                     <input type="color" id="lyrics-color-picker" value="#ff4500">
                 </div>
                 <button class="lyrics-control-btn" id="btn-font-size" title="字体大小"><i class="fas fa-font"></i></button>
-                <button class="lyrics-control-btn" id="btn-zoom-in" title="放大窗口"><i class="fas fa-plus-circle"></i></button>
-                <button class="lyrics-control-btn" id="btn-zoom-out" title="缩小窗口"><i class="fas fa-minus-circle"></i></button>
-                <button class="lyrics-control-btn" id="btn-reset-zoom" title="重置"><i class="fas fa-expand"></i></button>
+                <button class="lyrics-control-btn" id="btn-reset-size" title="重置大小"><i class="fas fa-expand"></i></button>
                 <button class="lyrics-control-btn" id="btn-toggle-lyrics" title="显示/隐藏歌词"><i class="fas fa-eye"></i></button>
                 <button class="lyrics-control-btn" id="btn-close-lyrics" title="关闭歌词窗口"><i class="fas fa-times"></i></button>
             </div>
         </div>
         <div id="lyrics-content">
-            <div class="current-line" id="lyrics-current-line">🎵 等待播放...</div>
+            <div class="current-line" id="lyrics-current-line"><i class="fas fa-music" style="margin-right:8px;"></i>等待播放...</div>
             <div class="next-line" id="lyrics-next-line"></div>
         </div>
-        <div id="zoom-indicator">100%</div>
+        <div id="size-indicator">100%</div>
+        <!-- 缩放拖拽手柄 -->
+        <div class="resize-handle resize-handle-bottom-right"><i class="fas fa-arrows-alt"></i></div>
+        <div class="resize-handle resize-handle-bottom"></div>
+        <div class="resize-handle resize-handle-right"></div>
     </div>
     
     <div id="music-capsule" title="点击展开音乐播放器"><img id="capsule-cover" src="https://p2.music.126.net/4HGEnXVexEfF2M4WdDdfrQ==/109951166354363385.jpg" alt="封面"></div>
     <div id="player-wrap" aria-hidden="true"><div id="aplayer-container"></div></div>
+    
     <ul id="right-menu" role="menu" aria-hidden="true">
         <li id="menu-play"><i class="fas fa-play"></i> 播放/暂停</li>
         <li id="menu-prev"><i class="fas fa-step-backward"></i> 上一首</li>
@@ -804,6 +872,7 @@ function 生成音乐播放器页面(host) {
         <li id="menu-fullscreen"><i class="fas fa-expand"></i> 全屏模式</li>
         <li id="menu-close"><i class="fas fa-times"></i> 关闭播放器</li>
     </ul>
+    
     <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> 返回首页</a>
     
     <script src="https://unpkg.com/meting@2.0.1/dist/Meting.min.js"></script>
@@ -817,11 +886,11 @@ function 生成音乐播放器页面(host) {
             var aplayerContainer = document.getElementById('aplayer-container');
             var rightMenu = document.getElementById('right-menu');
             
-            // 独立歌词元素
+            // 歌词元素
             var lyricsWindow = document.getElementById('floating-lyrics');
             var lyricsCurrent = document.getElementById('lyrics-current-line');
             var lyricsNext = document.getElementById('lyrics-next-line');
-            var zoomIndicator = document.getElementById('zoom-indicator');
+            var sizeIndicator = document.getElementById('size-indicator');
             var lyricsColorPicker = document.getElementById('lyrics-color-picker');
             var colorPickerWrapper = document.getElementById('color-picker-wrapper');
             
@@ -830,14 +899,14 @@ function 生成音乐播放器页面(host) {
             var isDragging = false;
             var dragStartX = 0, dragStartY = 0;
             var windowStartX = 0, windowStartY = 0;
-            var currentZoom = 1;
+            var windowWidth = 320, windowHeight = 120;
             var currentFontSize = 24;
             var currentColor = '#ff4500';
             var showColorPicker = false;
             var isLyricsWindowOpen = false;
             var currentLyricText = '';
             
-            // === 窗口拖拽功能 ===
+            // === 窗口拖拽 ===
             function initDrag() {
                 var controlBar = document.getElementById('lyrics-control-bar');
                 
@@ -864,10 +933,8 @@ function 生成音乐播放器页面(host) {
                     var winWidth = window.innerWidth;
                     var winHeight = window.innerHeight;
                     var rect = lyricsWindow.getBoundingClientRect();
-                    var w = rect.width;
-                    var h = rect.height;
-                    newX = Math.max(0, Math.min(newX, winWidth - w));
-                    newY = Math.max(0, Math.min(newY, winHeight - h - 20));
+                    newX = Math.max(0, Math.min(newX, winWidth - rect.width));
+                    newY = Math.max(0, Math.min(newY, winHeight - rect.height - 20));
                     lyricsWindow.style.left = newX + 'px';
                     lyricsWindow.style.top = newY + 'px';
                     e.preventDefault();
@@ -888,33 +955,119 @@ function 生成音乐播放器页面(host) {
                 document.addEventListener('touchend', onDragEnd);
             }
             
-            // === 缩放功能 ===
-            function updateZoom(zoomLevel) {
-                currentZoom = Math.max(0.3, Math.min(2, zoomLevel));
-                lyricsWindow.style.transform = 'scale(' + currentZoom + ')';
-                lyricsWindow.style.transformOrigin = 'center center';
-                var percent = Math.round(currentZoom * 100);
-                zoomIndicator.textContent = percent + '%';
-                zoomIndicator.classList.add('show');
-                clearTimeout(zoomIndicator._hideTimer);
-                zoomIndicator._hideTimer = setTimeout(function() {
-                    zoomIndicator.classList.remove('show');
-                }, 1000);
-                localStorage.setItem('lyricsZoom', currentZoom.toString());
+            // === 鼠标拖拽缩放 ===
+            function initResize() {
+                var resizeHandleBR = document.querySelector('.resize-handle-bottom-right');
+                var resizeHandleB = document.querySelector('.resize-handle-bottom');
+                var resizeHandleR = document.querySelector('.resize-handle-right');
+                var isResizing = false;
+                var resizeType = '';
+                var startX = 0, startY = 0;
+                var startW = 0, startH = 0;
+                var startL = 0, startT = 0;
+                
+                function onResizeStart(e, type) {
+                    if (!lyricsWindow.classList.contains('show')) return;
+                    var touch = e.touches ? e.touches[0] : e;
+                    isResizing = true;
+                    resizeType = type;
+                    startX = touch.clientX;
+                    startY = touch.clientY;
+                    var rect = lyricsWindow.getBoundingClientRect();
+                    startW = rect.width;
+                    startH = rect.height;
+                    startL = rect.left;
+                    startT = rect.top;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    lyricsWindow.classList.add('dragging');
+                }
+                
+                function onResizeMove(e) {
+                    if (!isResizing) return;
+                    var touch = e.touches ? e.touches[0] : e;
+                    var dx = touch.clientX - startX;
+                    var dy = touch.clientY - startY;
+                    var newW = startW, newH = startH, newL = startL, newT = startT;
+                    var minW = 200, minH = 80;
+                    var maxW = 1200;   // 最大宽度1200px
+                    var maxH = 800;    // 最大高度800px
+                    
+                    if (resizeType === 'br' || resizeType === 'b') {
+                        newH = Math.max(minH, Math.min(maxH, startH + dy));
+                    }
+                    if (resizeType === 'br' || resizeType === 'r') {
+                        newW = Math.max(minW, Math.min(maxW, startW + dx));
+                    }
+                    
+                    lyricsWindow.style.width = newW + 'px';
+                    lyricsWindow.style.height = newH + 'px';
+                    lyricsWindow.style.left = startL + 'px';
+                    lyricsWindow.style.top = startT + 'px';
+                    
+                    var percent = Math.round((newW / 320) * 100);
+                    sizeIndicator.textContent = newW + '×' + newH + ' (' + percent + '%)';
+                    sizeIndicator.classList.add('show');
+                    clearTimeout(sizeIndicator._hideTimer);
+                    sizeIndicator._hideTimer = setTimeout(function() {
+                        sizeIndicator.classList.remove('show');
+                    }, 1500);
+                    
+                    e.preventDefault();
+                }
+                
+                function onResizeEnd(e) {
+                    if (isResizing) {
+                        isResizing = false;
+                        lyricsWindow.classList.remove('dragging');
+                        localStorage.setItem('lyricsWindowWidth', lyricsWindow.style.width);
+                        localStorage.setItem('lyricsWindowHeight', lyricsWindow.style.height);
+                    }
+                }
+                
+                resizeHandleBR.addEventListener('mousedown', function(e) { onResizeStart(e, 'br'); });
+                resizeHandleBR.addEventListener('touchstart', function(e) { onResizeStart(e, 'br'); }, { passive: false });
+                resizeHandleB.addEventListener('mousedown', function(e) { onResizeStart(e, 'b'); });
+                resizeHandleB.addEventListener('touchstart', function(e) { onResizeStart(e, 'b'); }, { passive: false });
+                resizeHandleR.addEventListener('mousedown', function(e) { onResizeStart(e, 'r'); });
+                resizeHandleR.addEventListener('touchstart', function(e) { onResizeStart(e, 'r'); }, { passive: false });
+                
+                document.addEventListener('mousemove', onResizeMove);
+                document.addEventListener('mouseup', onResizeEnd);
+                document.addEventListener('touchmove', onResizeMove, { passive: false });
+                document.addEventListener('touchend', onResizeEnd);
             }
             
-            function zoomIn() { updateZoom(currentZoom + 0.1); }
-            function zoomOut() { updateZoom(currentZoom - 0.1); }
-            function resetZoom() { updateZoom(1); }
+            // === 重置窗口大小 ===
+            function resetWindowSize() {
+                lyricsWindow.style.width = '320px';
+                lyricsWindow.style.height = '120px';
+                sizeIndicator.textContent = '320×120 (100%)';
+                sizeIndicator.classList.add('show');
+                clearTimeout(sizeIndicator._hideTimer);
+                sizeIndicator._hideTimer = setTimeout(function() {
+                    sizeIndicator.classList.remove('show');
+                }, 1000);
+                localStorage.removeItem('lyricsWindowWidth');
+                localStorage.removeItem('lyricsWindowHeight');
+            }
             
-            // === 字体大小控制 ===
+            // === 字体大小 ===
             function updateFontSize(size) {
                 currentFontSize = Math.max(12, Math.min(60, size));
                 lyricsCurrent.style.fontSize = currentFontSize + 'px';
                 localStorage.setItem('lyricsFontSize', currentFontSize.toString());
             }
             
-            // === 歌词颜色控制 ===
+            function cycleFontSize() {
+                var sizes = [16, 20, 24, 28, 32, 36, 40, 48];
+                var idx = sizes.indexOf(currentFontSize);
+                if (idx === -1 || idx === sizes.length - 1) idx = 0;
+                else idx++;
+                updateFontSize(sizes[idx]);
+            }
+            
+            // === 歌词颜色 ===
             function updateLyricsColor(color) {
                 currentColor = color;
                 lyricsCurrent.style.color = color;
@@ -930,7 +1083,7 @@ function 生成音乐播放器页面(host) {
                 }
             }
             
-            // === 歌词显示控制 ===
+            // === 歌词窗口显示 ===
             function setLyricsWindowVisible(show) {
                 if (show) {
                     lyricsWindow.classList.add('show');
@@ -939,9 +1092,10 @@ function 生成音乐播放器页面(host) {
                     var savedTop = localStorage.getItem('lyricsWindowTop');
                     if (savedLeft) lyricsWindow.style.left = savedLeft + 'px';
                     if (savedTop) lyricsWindow.style.top = savedTop + 'px';
-                    var savedZoom = localStorage.getItem('lyricsZoom');
-                    if (savedZoom) updateZoom(parseFloat(savedZoom));
-                    else updateZoom(1);
+                    var savedW = localStorage.getItem('lyricsWindowWidth');
+                    var savedH = localStorage.getItem('lyricsWindowHeight');
+                    if (savedW) lyricsWindow.style.width = savedW;
+                    if (savedH) lyricsWindow.style.height = savedH;
                     var savedFontSize = localStorage.getItem('lyricsFontSize');
                     if (savedFontSize) updateFontSize(parseInt(savedFontSize));
                     else updateFontSize(24);
@@ -982,7 +1136,7 @@ function 生成音乐播放器页面(host) {
                     btn.title = '显示歌词';
                 }
                 if (!lyricsVisible) {
-                    lyricsCurrent.textContent = '💤 歌词已隐藏';
+                    lyricsCurrent.innerHTML = '<i class="fas fa-eye-slash" style="margin-right:8px;opacity:0.5;"></i>歌词已隐藏';
                     lyricsNext.textContent = '';
                 }
             }
@@ -990,7 +1144,7 @@ function 生成音乐播放器页面(host) {
             // === 歌词更新 ===
             function showLyricsWithEffect(currentText, nextText) {
                 if (!lyricsVisible) {
-                    lyricsCurrent.textContent = '💤 歌词已隐藏';
+                    lyricsCurrent.innerHTML = '<i class="fas fa-eye-slash" style="margin-right:8px;opacity:0.5;"></i>歌词已隐藏';
                     lyricsNext.textContent = '';
                     return;
                 }
@@ -1005,7 +1159,7 @@ function 生成音乐播放器页面(host) {
                     }
                     lyricsNext.textContent = nextText || '';
                 } else {
-                    lyricsCurrent.textContent = '🎵 等待播放...';
+                    lyricsCurrent.innerHTML = '<i class="fas fa-music" style="margin-right:8px;"></i>等待播放...';
                     lyricsNext.textContent = '';
                 }
             }
@@ -1014,21 +1168,21 @@ function 生成音乐播放器页面(host) {
                 if (lyricsInterval) clearInterval(lyricsInterval);
                 if (!isLyricsWindowOpen) return;
                 if (!lyricsVisible) {
-                    lyricsCurrent.textContent = '💤 歌词已隐藏';
+                    lyricsCurrent.innerHTML = '<i class="fas fa-eye-slash" style="margin-right:8px;opacity:0.5;"></i>歌词已隐藏';
                     lyricsNext.textContent = '';
                     return;
                 }
                 lyricsInterval = setInterval(function() {
                     if (!lyricsVisible) {
-                        lyricsCurrent.textContent = '💤 歌词已隐藏';
+                        lyricsCurrent.innerHTML = '<i class="fas fa-eye-slash" style="margin-right:8px;opacity:0.5;"></i>歌词已隐藏';
                         lyricsNext.textContent = '';
                         return;
                     }
                     try {
                         var lrcContainer = document.querySelector('.aplayer-lrc');
                         if (!lrcContainer) {
-                            if (!lyricsCurrent.textContent || lyricsCurrent.textContent === '🎵 等待播放...') return;
-                            lyricsCurrent.textContent = '🎵 等待播放...';
+                            if (lyricsCurrent.textContent === '等待播放...' || lyricsCurrent.textContent === '') return;
+                            lyricsCurrent.innerHTML = '<i class="fas fa-music" style="margin-right:8px;"></i>等待播放...';
                             lyricsNext.textContent = '';
                             return;
                         }
@@ -1045,8 +1199,8 @@ function 生成音乐播放器页面(host) {
                             }
                             showLyricsWithEffect(currentText, nextText);
                         } else {
-                            if (lyricsCurrent.textContent !== '🎵 等待播放...') {
-                                lyricsCurrent.textContent = '🎵 等待播放...';
+                            if (lyricsCurrent.textContent !== '等待播放...') {
+                                lyricsCurrent.innerHTML = '<i class="fas fa-music" style="margin-right:8px;"></i>等待播放...';
                                 lyricsNext.textContent = '';
                             }
                         }
@@ -1054,7 +1208,7 @@ function 生成音乐播放器页面(host) {
                 }, 100);
             }
             
-            // === APlayer 初始化 ===
+            // === APlayer ===
             function initMeting() {
                 if (aplayer) return Promise.resolve(aplayer);
                 return new Promise(function(resolve, reject) {
@@ -1110,11 +1264,11 @@ function 生成音乐播放器页面(host) {
                         clearInterval(lyricsInterval);
                         lyricsInterval = null;
                     }
-                    lyricsCurrent.textContent = '⏸️ 已暂停';
+                    lyricsCurrent.innerHTML = '<i class="fas fa-pause" style="margin-right:8px;"></i>已暂停';
                     lyricsNext.textContent = '';
                 });
                 ap.on('ended', function() {
-                    lyricsCurrent.textContent = '🎵 播放结束';
+                    lyricsCurrent.innerHTML = '<i class="fas fa-stop" style="margin-right:8px;"></i>播放结束';
                     lyricsNext.textContent = '';
                 });
             }
@@ -1127,7 +1281,7 @@ function 生成音乐播放器页面(host) {
                 });
             }
             
-            // === 胶囊点击 ===
+            // === 胶囊 ===
             capsule.addEventListener('click', function() {
                 capsule.style.display = 'none';
                 playerWrap.classList.add('show');
@@ -1142,7 +1296,7 @@ function 生成音乐播放器页面(host) {
                 rightMenu.style.display = 'block';
                 rightMenu.classList.remove('show');
                 requestAnimationFrame(function() {
-                    var mw = rightMenu.offsetWidth || 220;
+                    var mw = rightMenu.offsetWidth || 200;
                     var mh = rightMenu.offsetHeight || 320;
                     var left = Math.round(clientX - mw/2);
                     left = Math.max(8, Math.min(left, window.innerWidth - mw - 8));
@@ -1198,21 +1352,13 @@ function 生成音乐播放器页面(host) {
                 hideRightMenuImmediate();
             });
             
-            // === 歌词窗口控制按钮 ===
+            // === 控制按钮 ===
             document.getElementById('btn-color').addEventListener('click', toggleColorPicker);
             document.getElementById('lyrics-color-picker').addEventListener('input', function(e) {
                 updateLyricsColor(e.target.value);
             });
-            document.getElementById('btn-font-size').addEventListener('click', function() {
-                var sizes = [16, 20, 24, 28, 32, 36, 40, 48];
-                var idx = sizes.indexOf(currentFontSize);
-                if (idx === -1 || idx === sizes.length - 1) idx = 0;
-                else idx++;
-                updateFontSize(sizes[idx]);
-            });
-            document.getElementById('btn-zoom-in').addEventListener('click', zoomIn);
-            document.getElementById('btn-zoom-out').addEventListener('click', zoomOut);
-            document.getElementById('btn-reset-zoom').addEventListener('click', resetZoom);
+            document.getElementById('btn-font-size').addEventListener('click', cycleFontSize);
+            document.getElementById('btn-reset-size').addEventListener('click', resetWindowSize);
             document.getElementById('btn-toggle-lyrics').addEventListener('click', function() {
                 lyricsVisible = !lyricsVisible;
                 localStorage.setItem('lyricsVisible', lyricsVisible.toString());
@@ -1224,7 +1370,7 @@ function 生成音乐播放器页面(host) {
                         clearInterval(lyricsInterval);
                         lyricsInterval = null;
                     }
-                    lyricsCurrent.textContent = '💤 歌词已隐藏';
+                    lyricsCurrent.innerHTML = '<i class="fas fa-eye-slash" style="margin-right:8px;opacity:0.5;"></i>歌词已隐藏';
                     lyricsNext.textContent = '';
                 }
             });
@@ -1238,23 +1384,12 @@ function 生成音乐播放器页面(host) {
                     e.preventDefault();
                     toggleLyricsWindow();
                 }
-                if (e.ctrlKey && e.shiftKey && e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    zoomIn();
-                }
-                if (e.ctrlKey && e.shiftKey && e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    zoomOut();
-                }
-                if (e.ctrlKey && e.shiftKey && e.key === '0') {
-                    e.preventDefault();
-                    resetZoom();
-                }
             });
             
             // === 初始化 ===
             document.addEventListener('DOMContentLoaded', function() {
                 initDrag();
+                initResize();
                 var savedVisible = localStorage.getItem('lyricsWindowVisible');
                 if (savedVisible === 'true') {
                     setLyricsWindowVisible(true);
@@ -1289,23 +1424,30 @@ function 生成默认页面(host, pathname) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${host} - 音乐代理服务</title>
+	<link rel="icon" href="https://aoso.hangdn.com/favicon/logo.png" type="image/png">
+    <link rel="shortcut icon" href="https://aoso.hangdn.com/favicon/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { margin:0; padding:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#1a2980,#26d0ce); color:white; min-height:100vh; }
         .container { max-width:1200px; margin:0 auto; padding:20px; }
-        .header { text-align:center; padding:40px 20px; background:rgba(255,255,255,0.1); border-radius:20px; margin-bottom:30px; backdrop-filter:blur(10px); }
+        .header { text-align:center; padding:40px 20px; background:rgba(255,255,255,0.1); border-radius:20px; margin-bottom:30px; backdrop-filter:blur(10px);position:relative;  /* 添加这行 */ }
         .header h1 { font-size:3rem; margin:0; text-shadow:2px 2px 4px rgba(0,0,0,0.3); }
+        .header h1 i { margin-right:10px; }
         .header p { font-size:1.2rem; opacity:0.9; margin-top:10px; }
         .content { display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-bottom:40px; }
         @media (max-width:768px) { .content { grid-template-columns:1fr; } }
         .card { background:rgba(255,255,255,0.1); border-radius:15px; padding:25px; backdrop-filter:blur(10px); transition:transform 0.3s ease; }
         .card:hover { transform:translateY(-5px); }
         .card h2 { margin-top:0; color:#fff; font-size:1.8rem; }
+        .card h2 i { margin-right:8px; }
         .card p { line-height:1.6; opacity:0.9; }
         .features { display:flex; flex-wrap:wrap; gap:15px; margin-top:20px; }
         .feature { background:rgba(255,255,255,0.15); padding:10px 15px; border-radius:10px; font-size:0.9rem; }
+        .feature i { margin-right:6px; }
         .nav-buttons { display:flex; gap:15px; justify-content:center; margin-top:30px; flex-wrap:wrap; }
         .nav-button { padding:12px 25px; background:rgba(255,255,255,0.2); border:none; border-radius:25px; color:white; font-size:1rem; cursor:pointer; text-decoration:none; display:inline-block; transition:all 0.3s ease; }
         .nav-button:hover { background:rgba(255,255,255,0.3); transform:translateY(-2px); }
+        .nav-button i { margin-right:8px; }
         .nav-button.music { background:linear-gradient(135deg,#ff416c,#ff4b2b); }
         .nav-button.admin { background:linear-gradient(135deg,#11998e,#38ef7d); }
         .nav-button.sub { background:linear-gradient(135deg,#8e2de2,#4a00e0); }
@@ -1323,46 +1465,67 @@ function 生成默认页面(host, pathname) {
         #floating-lyrics.show { opacity:1; }
         #floating-lyrics .current-line { color:#ff4500; font-size:30px; margin-bottom:8px; font-weight:bold; min-height:24px; overflow:hidden; }
         #floating-lyrics .next-line { color:#ff8c00; font-size:14px; opacity:0.8; min-height:18px; }
+        .nav-button i { margin-right:8px; }
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
 </head>
 <body>
+    <!-- GitHub 链接 - 浏览器右上角固定 -->
+    <a href="https://github.com/chnbsdan/edgetunnel" target="_blank" 
+       style="position:fixed; top:0; right:0; width:0; height:0; 
+              border-top:50px solid rgba(0,100,255,0.85);
+              border-left:50px solid transparent;
+              text-decoration:none; cursor:pointer; 
+              transition:all 0.3s ease; z-index:99999;"
+       onmouseover="this.style.borderTopColor='rgba(0,80,220,1)'; this.style.transform='scale(1.05)';"
+       onmouseout="this.style.borderTopColor='rgba(0,100,255,0.85)'; this.style.transform='scale(1)';">
+        <i class="fab fa-github" style="position:absolute; top:-44px; right:6px; 
+              color:white; font-size:20px; transform:rotate(45deg);"></i>
+    </a>
+
     <div class="container">
         <div class="header">
-            <h1>🌐 音乐代理服务</h1>
+            <h1><i class="fas fa-globe"></i> 音乐代理服务</h1>
             <p>高性能 Cloudflare Workers 音乐代理服务</p>
-            <p>域名: ${host} | 路径: ${pathname}</p>
+            <p><i class="fas fa-globe" style="opacity:0.6;"></i> 域名: ${host} | <i class="fas fa-folder" style="opacity:0.6;"></i> 路径: ${pathname}</p>
+			
         </div>
         <div class="content">
             <div class="card">
-                <h2>🚀 服务特性</h2>
+                <h2><i class="fas fa-rocket"></i> 服务特性</h2>
                 <p>基于 Cloudflare Workers 的高性能音乐代理服务，支持多种协议和高级功能。</p>
                 <div class="features">
-                    <div class="feature">⚡ 高速连接</div><div class="feature">🔒 安全加密</div>
-                    <div class="feature">🌍 全球节点</div><div class="feature">🔄 自动优选</div>
-                    <div class="feature">📊 用量统计</div><div class="feature">🔧 灵活配置</div>
+                    <div class="feature"><i class="fas fa-bolt"></i> 高速连接</div>
+                    <div class="feature"><i class="fas fa-lock"></i> 安全加密</div>
+                    <div class="feature"><i class="fas fa-globe-asia"></i> 全球节点</div>
+                    <div class="feature"><i class="fas fa-sync-alt"></i> 自动优选</div>
+                    <div class="feature"><i class="fas fa-chart-bar"></i> 用量统计</div>
+                    <div class="feature"><i class="fas fa-sliders-h"></i> 灵活配置</div>
                 </div>
             </div>
             <div class="card">
-                <h2>🎵 音乐播放器</h2>
+                <h2><i class="fas fa-headphones"></i> 音乐播放器</h2>
                 <p>内置网易云音乐播放器，支持在线播放和歌词显示，工作娱乐两不误。</p>
                 <div class="features">
-                    <div class="feature">🎶 在线播放</div><div class="feature">📜 歌词显示</div>
-                    <div class="feature">🎧 高音质</div><div class="feature">📱 响应式设计</div>
-                    <div class="feature">🔊 独立歌词</div><div class="feature">🎨 精美UI</div>
+                    <div class="feature"><i class="fas fa-play-circle"></i> 在线播放</div>
+                    <div class="feature"><i class="fas fa-align-left"></i> 歌词显示</div>
+                    <div class="feature"><i class="fas fa-music"></i> 高音质</div>
+                    <div class="feature"><i class="fas fa-mobile-alt"></i> 响应式设计</div>
+                    <div class="feature"><i class="fas fa-window-restore"></i> 独立歌词</div>
+                    <div class="feature"><i class="fas fa-palette"></i> 精美UI</div>
                 </div>
             </div>
         </div>
         <div class="nav-buttons">
-            <a href="/music" class="nav-button music">🎵 音乐播放器</a>
-            <a href="/admin" class="nav-button admin">⚙️ 管理面板</a>
-            <a href="/sub" class="nav-button sub">📡 订阅服务</a>
+            <a href="/music" class="nav-button music"><i class="fas fa-music"></i> 音乐播放器</a>
+            <a href="/admin" class="nav-button admin"><i class="fas fa-cog"></i> 管理面板</a>
+            <a href="/sub" class="nav-button sub"><i class="fas fa-rss"></i> 订阅服务</a>
         </div>
     </div>
     <div class="footer">
-        <p>© 2024 ${host} - Cloudflare Workers Proxy Service</p>
-        <p>Powered by Edge Tunnel Technology</p>
-    </div>
+    <p><i class="far fa-copyright"></i> 2024 <a href="https://github.com/chnbsdan/edgetunnel" target="_blank" style="color:rgba(255,255,255,0.8);text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.2);"><i class="fab fa-github"></i> Github</a> - Cloudflare Workers Proxy Service</p>
+    <p>Powered by Edge Tunnel Technology <i class="fas fa-tunnel" style="opacity:0.5;"></i></p>
+</div>
     
     <div id="floating-lyrics"><div class="current-line"></div><div class="next-line"></div></div>
     <div id="music-capsule" title="点击展开音乐播放器"><img id="capsule-cover" src="https://p2.music.126.net/4HGEnXVexEfF2M4WdDdfrQ==/109951166354363385.jpg" alt="封面"></div>
@@ -1371,49 +1534,49 @@ function 生成默认页面(host, pathname) {
     <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
     <script src="https://unpkg.com/meting@2.0.1/dist/Meting.min.js"></script>
     <script>
-    (function() {
-        const PLAYLIST_ID = '14148542684';
-        var aplayer = null;
-        var capsule = document.getElementById('music-capsule');
-        var capsuleCover = document.getElementById('capsule-cover');
-        var playerWrap = document.getElementById('player-wrap');
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            capsule.addEventListener('click', function() {
-                capsule.style.display = 'none';
-                playerWrap.classList.add('show');
-                
-                if (!aplayer) {
-                    var container = document.getElementById('aplayer-container');
-                    container.innerHTML = '';
-                    var metingEl = document.createElement('meting-js');
-                    metingEl.setAttribute('server', 'netease');
-                    metingEl.setAttribute('type', 'playlist');
-                    metingEl.setAttribute('id', PLAYLIST_ID);
-                    metingEl.setAttribute('autoplay', 'false');
-                    metingEl.setAttribute('theme', '#49b1f5');
-                    metingEl.setAttribute('loop', 'all');
-                    metingEl.setAttribute('preload', 'auto');
-                    container.appendChild(metingEl);
-                    metingEl.addEventListener('rendered', function() {
-                        aplayer = metingEl.aplayer;
-                        aplayer.on('play', function() { capsule.classList.add('playing'); });
-                        aplayer.on('pause', function() { capsule.classList.remove('playing'); });
-                    });
-                }
-            });
+        (function() {
+            const PLAYLIST_ID = '14148542684';
+            var aplayer = null;
+            var capsule = document.getElementById('music-capsule');
+            var capsuleCover = document.getElementById('capsule-cover');
+            var playerWrap = document.getElementById('player-wrap');
             
-            fetch('https://api.i-meto.com/meting/api?server=netease&type=playlist&id=' + PLAYLIST_ID)
-                .then(function(response) { return response.json(); })
-                .then(function(songList) {
-                    if (songList && songList.length > 0 && songList[0].pic) {
-                        var coverUrl = songList[0].pic.replace('http://', 'https://');
-                        capsuleCover.src = coverUrl;
+            document.addEventListener('DOMContentLoaded', function() {
+                capsule.addEventListener('click', function() {
+                    capsule.style.display = 'none';
+                    playerWrap.classList.add('show');
+                    
+                    if (!aplayer) {
+                        var container = document.getElementById('aplayer-container');
+                        container.innerHTML = '';
+                        var metingEl = document.createElement('meting-js');
+                        metingEl.setAttribute('server', 'netease');
+                        metingEl.setAttribute('type', 'playlist');
+                        metingEl.setAttribute('id', PLAYLIST_ID);
+                        metingEl.setAttribute('autoplay', 'false');
+                        metingEl.setAttribute('theme', '#49b1f5');
+                        metingEl.setAttribute('loop', 'all');
+                        metingEl.setAttribute('preload', 'auto');
+                        container.appendChild(metingEl);
+                        metingEl.addEventListener('rendered', function() {
+                            aplayer = metingEl.aplayer;
+                            aplayer.on('play', function() { capsule.classList.add('playing'); });
+                            aplayer.on('pause', function() { capsule.classList.remove('playing'); });
+                        });
                     }
-                })
-                .catch(function(e) { console.error('直接获取封面失败：', e); });
-        });
-    })();
+                });
+                
+                fetch('https://api.i-meto.com/meting/api?server=netease&type=playlist&id=' + PLAYLIST_ID)
+                    .then(function(response) { return response.json(); })
+                    .then(function(songList) {
+                        if (songList && songList.length > 0 && songList[0].pic) {
+                            var coverUrl = songList[0].pic.replace('http://', 'https://');
+                            capsuleCover.src = coverUrl;
+                        }
+                    })
+                    .catch(function(e) { console.error('直接获取封面失败：', e); });
+            });
+        })();
     </script>
 </body>
 </html>`;
