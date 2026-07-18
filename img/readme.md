@@ -2,7 +2,7 @@
 <!-- 动态打字效果 -->
 <h1 align="center">
   <a href="https://blog.1356666.xyz/">
-    <img src="https://readme-typing-svg.herokuapp.com?color=%2336BCF7&lines=宗谱考证，地名沿革，家族记忆，不务虚言，惟存其实。;Hangdn blog(%22Hello%EF%BC%8Cworld%22)">
+    <img src="https://readme-typing-svg.herokuapp.com?color=%2336BCF7&lines=宗谱考证，地名沿革，家族记忆，不务虚言，惟存其实。;console.log(%22Hello%EF%BC%8Cworld%22)">
   </a>
 </h1>
 
