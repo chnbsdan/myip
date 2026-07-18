@@ -1,9 +1,21 @@
-# 此仓库为订阅链接相关的需求做服务收藏的
+# 此仓库为科学上网订阅链接相关项目做服务收藏的临时记录
 
 ## IP收录
 
 
 ## 批量格式化节点名称
+
+
+<details>
+<summary>github项目用于自部署节点的代码链接（点击展开）</summary>
+  
+[**CM大佬**](https://github.com/chnbsdan/edgetunnel)，需要CF部署，已融合网易歌单版。
+[]()
+[**天诚大佬**](https://github.com/chnbsdan/stallTCP1.3V1)，需要CF部署
+[]()
+
+
+</details>
 
 
 
