@@ -10,8 +10,11 @@
 <summary>github项目用于自部署节点的代码链接（点击展开）</summary>
   
 [**CM大佬**](https://github.com/chnbsdan/edgetunnel)，需要CF部署，已融合网易歌单版。
-[]()
+
+[**佬王大佬**](https://github.com/chnbsdan/Cloudflare-proxy)
+
 [**天诚大佬**](https://github.com/chnbsdan/stallTCP1.3V1)，需要CF部署
+
 []()
 
 
